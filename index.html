@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Street Food & Hawker Culture in Malaysia — Interactive Dashboard</title>
+
+  <!-- Vega libraries (VL v5 as required) -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.17.0"></script>
+
+  <style>
+    :root{
+      --bg: #fffaf4;            /* warm paper */
+      --panel:#ffffff;
+      --ink:#1f2937;            /* text */
+      --muted:#6b7280;
+      --brand:#c67c3e;          /* satay-sauce orange */
+      --brand-700:#9c5d28;      /* deep brown */
+      --accent:#386a20;         /* pandan green */
+      --line:#f1e7dc;           /* light divider */
+      --chip:#f6ede2;
+    }
+
+    html{ scroll-behavior: smooth; }
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      line-height:1.5;
+    }
+
+    /* ---- Navbar ---- */
+    .nav{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(6px);
+      background: color-mix(in srgb, var(--bg) 70%, white 30%);
+      border-bottom:1px solid var(--line);
+    }
+    .nav-inner{
+      max-width:1200px; margin:0 auto; padding:12px 18px;
+      display:flex; gap:20px; align-items:center; justify-content:space-between;
+    }
+    .brand{
+      font-weight:800; letter-spacing:.3px; color:var(--brand-700);
+    }
+    .tabs{ display:flex; gap:16px; flex-wrap:wrap; }
+    .tabs a{
+      color:var(--ink); text-decoration:none; font-weight:600;
+      padding:8px 12px; border-radius:999px; background:transparent;
+      border:1px solid transparent;
+    }
+    .tabs a:hover{ background:var(--chip); border-color:var(--line); }
+
+    /* ---- Hero ---- */
+    .hero{
+      background: linear-gradient(180deg,#f7efe6,transparent 70%);
+      border-bottom:1px solid var(--line);
+    }
+    .hero-inner{
+      max-width:1200px; margin:0 auto; padding:42px 18px 26px;
+      display:grid; grid-template-columns: 1.25fr 1fr; gap:28px;
+    }
+    .hero--center .hero-inner{
+      grid-template-columns: 1fr;
+      place-items: center;
+    }
+    .hero--center .hero-inner > div{
+      text-align: center;
+      margin-inline: auto;
+      max-width: 900px;
+    }
+
+    h1{
+      font-size:clamp(28px,5vw,48px); line-height:1.15; margin:0 0 6px;
+      font-weight:900; letter-spacing:.2px; color:var(--brand-700);
+    }
+    .kicker{ color:var(--accent); text-transform:uppercase; font-weight:800; letter-spacing:.12em; }
+    .lead{ color:var(--muted); font-size:clamp(16px,2.2vw,18px); margin:8px 0 0; }
+
+    /* ---- Main ---- */
+    main{ max-width:1200px; margin:28px auto 80px; padding:0 18px; }
+    section{ margin:40px 0 56px; }
+    h2{
+      font-size:clamp(22px,3vw,30px);
+      margin:0 0 8px; color:var(--accent); font-weight:900;
+    }
+    .sub{ color:var(--muted); margin-top:-2px; }
+
+    .card{
+      background:var(--panel); border:1px solid var(--line);
+      border-radius:14px; padding:14px 14px 6px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    .cols{ display:grid; grid-template-columns: 1fr 1fr; gap:24px; }
+    @media (max-width: 960px){ .hero-inner{ grid-template-columns:1fr;} .cols{ grid-template-columns:1fr; } }
+
+    /* ---- Footer / Sources ---- */
+    footer{ border-top:1px solid var(--line); background:#fff; }
+    .footer-inner{ max-width:1200px; margin:0 auto; padding:24px 18px 50px; color:var(--muted); }
+    .foot-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media (max-width: 768px){ .foot-grid{ grid-template-columns:1fr; } }
+
+    /* ---- Back to top ---- */
+    .top{
+      position:fixed; right:16px; bottom:16px; z-index:60;
+      width:44px; height:44px; border-radius:50%;
+      background:var(--accent); color:#fff; border:none;
+      box-shadow:0 10px 20px rgba(0,0,0,.12); display:grid; place-items:center;
+      cursor:pointer; opacity:0; visibility:hidden; transition: .25s;
+    }
+    .top.show{ opacity:1; visibility:visible; }
+    .top:hover{ background:color-mix(in srgb, var(--accent) 85%, black 15%); }
+    .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">🍜 Hawker Food in Malaysia</div>
+      <div class="tabs">
+        <a href="#map">Map by State</a>
+        <a href="#mix">Food mix by State</a>
+        <a href="#top20">Top 20 foods</a>
+        <a href="#about">About & Sources</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero (centered) -->
+  <header class="hero hero--center" id="home">
+    <div class="hero-inner">
+      <div>
+        <div class="kicker">Visual Story</div>
+        <h1>Street Food & Hawker Culture in Malaysia</h1>
+        <p class="lead">
+          A warm, data-driven look at what Malaysians eat at hawker stalls,
+          how the mix differs by state, and which items dominate the national palate.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main>
+
+    <!-- NEW Section: Map -->
+    <section id="map">
+      <h2>1) Total Street Foods by State </h2>
+      
+      <div class="card"><div id="visMap"></div></div>
+    </section>
+
+    <!-- Section 1 -->
+    <section id="mix">
+      <h2>2) Hawker Food Mix by State</h2>
+      
+      <div class="card"><div id="vis1"></div></div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="top20">
+      <h2>3) Top 20 Street Foods Across All Categories</h2>
+      
+      <div class="card"><div id="vis2"></div></div>
+    </section>
+
+    
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="foot-grid">
+        <div>
+          <strong>Data & Sources</strong>
+          <ul style="margin:8px 0 0 18px">
+            <li>
+              Zainal Arifen, Shahar, Trieu & Haron (2025). <em>What are the commonly available street foods in Malaysia?</em>
+              <br/>Journal of Agriculture and Food Research. (tables summarised & digitised for counts/shares)
+            </li>
+            <li>State names & locations derived for alignment with public geography.</li>
+             <li>Author: Jessica Wong Chai Fei</li>
+              <li>Date: 15/10/2025</li>
+          </ul>
+        
+    </div>
+  </footer>
+
+  <!-- Back to Top -->
+  <button class="top" id="topBtn" aria-label="Back to top">
+    <span class="sr">Back to top</span>
+    ▲
+  </button>
+
+  <script>
+    /* ---- Shared palette (for both charts) ---- */
+    const categoryDomain = ["Desserts","Main meals","Snacks"];
+    const categoryRange  = ["#9c5d28","#c67c3e","#386a20"]; // brand-700, brand, accent
+
+    /* ---------------- NEW: Choropleth Map ---------------- */
+    const specMap = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "width": 900,
+      "height": 520,
+      "title": "Malaysia Hawker Foods — Total by State",
+      "projection": {"type": "mercator"},
+      "data": {
+        "url": "https://raw.githubusercontent.com/jesscf08/FIT3179dv2/refs/heads/main/Malaysia_json.json",
+        "format": {"type": "topojson", "feature": "ne_10m_admin_1_states_provinces"}
+      },
+      "transform": [
+        {"filter": "datum.properties.adm0_a3 == 'MYS'"},
+        {
+          "calculate":
+            "datum.properties.name == 'Kuala Lumpur' ? 'W.P. Kuala Lumpur' : (datum.properties.name == 'Pulau Pinang' ? 'Penang' : datum.properties.name)",
+          "as": "name_csv"
+        },
+        {
+          "lookup": "name_csv",
+          "from": {
+            "data": {
+              "url": "https://raw.githubusercontent.com/jesscf08/FIT3179-DV2/main/FIT3179%20homework%2010/hawker_state_summary.csv"
+            },
+            "key": "state",
+            "fields": ["total_state","main_meals","snacks","desserts","locations"]
+          }
+        }
+      ],
+      "mark": {"type": "geoshape", "stroke": "white", "strokeWidth": 0.6},
+      "encoding": {
+        "color": {
+          "field": "total_state",
+          "type": "quantitative",
+          "title": "Total street foods",
+          "scale": {"range": ["#fde9d8", "#f3bf94", "#c67c3e", "#9c5d28"]}
+        },
+        "tooltip": [
+          {"field": "name_csv", "title": "State"},
+          {"field": "total_state", "title": "Total foods", "type": "quantitative", "format": ","},
+          {"field": "main_meals", "title": "Main meals (n)", "type": "quantitative", "format": ","},
+          {"field": "snacks", "title": "Snacks (n)", "type": "quantitative", "format": ","},
+          {"field": "desserts", "title": "Desserts (n)", "type": "quantitative", "format": ","},
+          {"field": "locations", "title": "Locations surveyed", "type": "quantitative", "format": ","}
+        ]
+      },
+      "config": {"view": {"stroke": null}, "background": "#fffaf4"}
+    };
+
+    /* ---------------- Chart 1: Mix by State ---------------- */
+    const specMixByState = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": "Hawker Food Mix by State (Shares of Main Meals, Snacks, Desserts)",
+      "width": 1000,
+      "height": 420,
+      "data": {
+        "url": "https://raw.githubusercontent.com/jesscf08/FIT3179-DV2/main/FIT3179%20homework%2010/hawker_state_summary.csv"
+      },
+      "params": [
+        {
+          "name": "minLoc",
+          "value": 0,
+          "bind": {"input": "range", "min": 0, "max": 200, "step": 10, "name": "Min locations surveyed"}
+        }
+      ],
+      "transform": [
+        {"filter": "datum.locations >= minLoc"},
+        {"fold": ["share_main","share_snacks","share_desserts"], "as": ["share_type","share"]},
+        {
+          "calculate": "datum.share_type=='share_main' ? 'Main meals' : datum.share_type=='share_snacks' ? 'Snacks' : 'Desserts'",
+          "as": "category"
+        }
+      ],
+      "layer": [
+        {
+          "params": [{ "name": "catPick", "select": {"type": "point", "fields": ["category"]}, "bind": "legend" }],
+          "mark": "bar",
+          "encoding": {
+            "x": {
+              "field": "state", "type": "nominal",
+              "sort": {"field": "total_state", "order": "descending"},
+              "title": "State / Federal Territory"
+            },
+            "y": {
+              "field": "share", "type": "quantitative", "stack": "normalize",
+              "axis": {"format": ".0%", "title": "Share of hawker foods"}
+            },
+            "color": {
+              "field": "category", "type": "nominal", "title": "Category",
+              "scale": {"domain": categoryDomain, "range": categoryRange}
+            },
+            "opacity": {"condition": {"param": "catPick", "value": 1}, "value": 0.25},
+            "tooltip": [
+              {"field": "state", "title": "State"},
+              {"field": "category", "title": "Category"},
+              {"field": "main_meals", "type": "quantitative", "title": "Main meals (n)", "format": ","},
+              {"field": "snacks", "type": "quantitative", "title": "Snacks (n)", "format": ","},
+              {"field": "desserts", "type": "quantitative", "title": "Desserts (n)", "format": ","},
+              {"field": "total_state", "type": "quantitative", "title": "Total foods (n)", "format": ","},
+              {"field": "locations", "type": "quantitative", "title": "Locations surveyed", "format": ","},
+              {"field": "share", "type": "quantitative", "format": ".1%", "title": "Share (selected category)"}
+            ]
+          }
+        },
+        {
+          "transform": [{"aggregate": [{"op": "mean", "field": "share_main", "as": "avg_main"}]}],
+          "mark": {"type": "rule", "strokeDash": [4,4], "color": "#fffaf4"},
+          "encoding": {"y": {"field": "avg_main", "type": "quantitative"}}
+        },
+        {
+          "transform": [
+            {"aggregate": [{"op": "mean", "field": "share_main", "as": "avg_main"}]},
+            {"calculate": "'Avg main-meals share: ' + format(datum.avg_main, '.0%')", "as": "avg_lbl"}
+          ],
+          "mark": {"type": "text", "dx": 6, "dy": -6, "fontSize": 11, "color": "#fffaf4", "fontWeight": "bold"},
+          "encoding": { "y": {"field": "avg_main", "type": "quantitative"}, "text": {"field": "avg_lbl"} }
+        },
+        {
+          "transform": [
+            {"filter": "datum.category == 'Desserts'"},
+            {"window": [{"op": "rank", "as": "r"}], "sort": [{"field": "share", "order": "descending"}]},
+            {"filter": "datum.r == 1"},
+            {"calculate": "'Highest desserts share: ' + datum.state + ' (' + format(datum.share, '.0%') + ')'", "as": "dessert_lbl"}
+          ],
+          "mark": {"type": "text", "dy": -8, "fontSize": 11, "color": "#86a20", "fontWeight": "bold"},
+          "encoding": { "x": {"field": "state", "type": "nominal"}, "y": {"value": 0}, "text": {"field": "dessert_lbl"} }
+        }
+      ],
+      "config": {"legend": {"orient": "right"}, "view": {"stroke": null}}
+    };
+
+    /* ---------------- Chart 2: Top 20 Foods ---------------- */
+    const specTop20 = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": "Top 20 Street Foods Across All Categories (by Share of Outlets)",
+      "width": 1000,
+      "height": 720,
+      "data": {
+        "url": "https://raw.githubusercontent.com/jesscf08/FIT3179-DV2/main/FIT3179%20homework%2010/hawker_top_foods.csv"
+      },
+      "params": [
+        {
+          "name": "catDropTop",
+          "value": "All",
+          "bind": { "input": "select", "options": ["All", "Main meals", "Snacks", "Desserts"], "name": "Filter category: " }
+        }
+      ],
+      "transform": [
+        {"calculate": "toNumber(datum.percent)/100", "as": "pct"},
+        {"filter": "catDropTop == 'All' || datum.category == catDropTop"},
+        {"window": [{"op": "rank", "as": "r"}], "sort": [{"field": "pct", "order": "descending"}]},
+        {"filter": "datum.r <= 20"}
+      ],
+      "layer": [
+        {
+          "mark": {"type": "bar"},
+          "encoding": {
+            "y": {"field": "food_name", "type": "nominal", "sort": {"field": "pct", "order": "descending"}, "title": null},
+            "x": {"field": "pct", "type": "quantitative", "axis": {"format": ".1%"}, "title": "% of outlets"},
+            "color": {
+              "field": "category", "type": "nominal", "title": "Category",
+              "scale": {"domain": categoryDomain, "range": categoryRange}
+            },
+            "tooltip": [
+              {"field": "food_name", "title": "Food"},
+              {"field": "category", "title": "Category"},
+              {"field": "pct", "type": "quantitative", "format": ".1%", "title": "Share of outlets"},
+              {"field": "n", "type": "quantitative", "title": "n (count)", "format": ","}
+            ]
+          }
+        },
+        {
+          "transform": [{"aggregate": [{"op": "mean", "field": "pct", "as": "avg_pct"}]}],
+          "mark": {"type": "rule", "strokeDash": [4,4], "color": "#9c5d28"},
+          "encoding": {"x": {"field": "avg_pct", "type": "quantitative"}}
+        },
+        {
+          "transform": [
+            {"aggregate": [{"op": "mean", "field": "pct", "as": "avg_pct"}]},
+            {"calculate": "'Avg (Top 20): ' + format(datum.avg_pct, '.1%')", "as": "avg_lbl"}
+          ],
+          "mark": {"type": "text", "dx": 6, "dy": -6, "fontSize": 11, "color": "#9c5d28", "fontWeight": "bold"},
+          "encoding": {"x": {"field": "avg_pct", "type": "quantitative"}, "text": {"field": "avg_lbl"}}
+        },
+        {
+          "transform": [
+            { "filter": "datum.r == 1" },
+            { "calculate": "'Top item (' + format(datum.pct, '.1%') + ')'", "as": "top_lbl" }
+          ],
+          "mark": { "type": "text", "align": "right", "baseline": "middle", "dx": -6, "dy": 0,
+                    "fontSize": 11, "fontWeight": "bold", "color": "white" },
+          "encoding": { "y": { "field": "food_name", "type": "nominal" },
+                        "x": { "field": "pct", "type": "quantitative" },
+                        "text": { "field": "top_lbl" } }
+        }
+      ],
+      "config": {"view": {"stroke": null}}
+    };
+
+    /* ---- Embed all charts ---- */
+    vegaEmbed("#visMap", specMap, {actions:false});
+    vegaEmbed("#vis1",   specMixByState, {actions:false});
+    vegaEmbed("#vis2",   specTop20, {actions:false});
+
+    /* ---- Back to top behaviour ---- */
+    const topBtn = document.getElementById('topBtn');
+    const showTop = () => {
+      const y = window.scrollY || document.documentElement.scrollTop;
+      if (y > 400) { topBtn.classList.add('show'); } else { topBtn.classList.remove('show'); }
+    };
+    showTop();
+    window.addEventListener('scroll', showTop);
+    topBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+  </script>
+</body>
+</html>
