@@ -1,0 +1,61 @@
+category,rank,food_name,n,percent
+Main meals,1,Nasi lemak @ coconut rice (regular),173,4.5
+Main meals,2,Fried noodles,162,4.2
+Main meals,3,Laksa (Penang style),157,4.0
+Main meals,4,Fried kuey teow,143,3.7
+Main meals,5,Fried rice,116,3.0
+Main meals,6,Noodles with gravy (varieties),112,2.9
+Main meals,7,Fried vermicelli @ fried mihun,105,2.7
+Main meals,8,Noodle soup,103,2.7
+Main meals,9,Chicken burger,99,2.6
+Main meals,10,Kerabu rice (salted egg),98,2.6
+Main meals,11,Vermicelli soup @ mihun sup,96,2.5
+Main meals,12,Roti john,95,2.4
+Main meals,13,Kebab,95,2.4
+Main meals,14,Chicken rice,91,2.3
+Main meals,15,Beef burger,82,2.1
+Main meals,16,Rice porridge,68,1.7
+Main meals,17,Kuey teow soup,67,1.7
+Main meals,18,Nasi lemak @ coconut rice with fried chicken,67,1.7
+Main meals,19,Cubed rice with peanut gravy @ nasi impit,61,1.6
+Main meals,20,Bread with savoury fillings (varieties),56,1.4
+Snacks,1,Fried chicken,317,7.5
+Snacks,2,Keropok lekor,247,5.8
+Snacks,3,Satay,240,5.7
+Snacks,4,Takoyaki,118,2.8
+Snacks,5,Fried sausage,109,2.6
+Snacks,6,Grilled sausage,107,2.5
+Snacks,7,Fried chicken (non-meat parts),103,2.4
+Snacks,8,Curry puff,99,2.3
+Snacks,9,Chicken nuggets,98,2.3
+Snacks,10,Pizza (varieties),93,2.2
+Snacks,11,French fries,87,2.1
+Snacks,12,Murtabak,84,2.0
+Snacks,13,Fried popiah,79,1.9
+Snacks,14,Sausage served with cheese,75,1.8
+Snacks,15,Fried fish ball,74,1.7
+Snacks,16,Corndog,71,1.7
+Snacks,17,Sushi,70,1.7
+Snacks,18,Boiled corn (savory),64,1.5
+Snacks,19,Dim sum,61,1.4
+Snacks,20,Roasted chicken (small cuts),53,1.3
+Desserts,1,Apam balik,214,8.9
+Desserts,2,Cakes (varieties),158,6.6
+Desserts,3,Doughnut,131,5.5
+Desserts,4,Ice cream,87,3.6
+Desserts,5,Banana fritters,80,3.3
+Desserts,6,Tau fu fa @ soybean curd,69,2.9
+Desserts,7,Steamed baozi with fillings (varieties),56,2.3
+Desserts,8,Kueh lapis,51,2.1
+Desserts,9,Agar-agar,41,1.7
+Desserts,10,Kueh seri muka,39,1.6
+Desserts,11,Kueh keria,37,1.5
+Desserts,12,Kueh peneram,37,1.5
+Desserts,13,Muah chee (sweet),35,1.5
+Desserts,14,Apam beras,35,1.5
+Desserts,15,Kueh bingka pandan,34,1.4
+Desserts,16,Shaved ice,34,1.4
+Desserts,17,Kuih akok,33,1.4
+Desserts,18,Kueh puteri ayu,32,1.3
+Desserts,19,Apam balik with cheese,28,1.2
+Desserts,20,Kueh kaswi,28,1.2
